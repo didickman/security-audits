@@ -6,13 +6,12 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/Uri.zig:24`
+- `lib/std/Uri.zig:28`
 - `lib/std/Uri.zig:31`
-- `lib/std/http/Client.zig:1237`
-- `lib/std/http/Client.zig:1240`
-- `lib/std/http/Client.zig:1357`
-- `lib/std/http/Client.zig:1368`
-- `lib/std/http/Client.zig:1727`
+- `lib/std/Uri.zig:267`
+- `lib/std/http/Client.zig:1232`
+- `lib/std/http/Client.zig:1352`
+- `lib/std/http/Client.zig:1724`
 
 ## Summary
 `Uri.parseAfterScheme` stores authority host bytes as `.percent_encoded` without hostname validation, but `Uri.host` is later consumed as if already trusted. `getHost` converts that parsed host into `std.net.HostName` via `toRaw` and treats `error.NoSpaceLeft` as unreachable, relying on a validation guarantee that parsing never established. A crafted parsed URI host therefore crosses a trust boundary into trusted `HostName` output and can also trigger a panic when percent-decoding expands beyond `HostName.max_len`.
@@ -51,9 +50,9 @@ Observed behavior:
 - `getHost` treats that error as unreachable and panics at `lib/std/Uri.zig:31`
 
 This is reachable from stdlib consumers that trust `getHost` output, including:
-- `lib/std/http/Client.zig:1727` before outbound connection setup
-- `lib/std/http/Client.zig:1237` and `lib/std/http/Client.zig:1240` during redirect parent-domain checks
-- `lib/std/http/Client.zig:1357` and `lib/std/http/Client.zig:1368` during proxy host parsing
+- `lib/std/http/Client.zig:1724` before outbound connection setup
+- `lib/std/http/Client.zig:1232` during redirect parent-domain checks
+- `lib/std/http/Client.zig:1352` during proxy host parsing
 
 ## Why This Is A Real Bug
 The bug is not theoretical:

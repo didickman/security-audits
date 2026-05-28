@@ -4,10 +4,10 @@
 High severity validation gap. Confidence: certain.
 
 ## Affected Locations
-- `lib/std/coff.zig:833`
-- `lib/std/coff.zig:1169`
-- `lib/std/debug/SelfInfo/Windows.zig:515`
-- `lib/std/debug/SelfInfo/Windows.zig:519`
+- `lib/std/coff.zig:1164`
+- `lib/std/coff.zig:1166`
+- `lib/std/debug/SelfInfo/Windows.zig:513`
+- `lib/std/debug/SelfInfo/Windows.zig:518`
 
 ## Summary
 `Coff.getSectionData` slices `self.data` using `SectionHeader` fields taken from attacker-controlled COFF/PE input without validating that `offset + size` stays within `self.data.len`. A crafted section header can therefore trigger a bounds trap and denial of service during section lookup.
@@ -21,7 +21,7 @@ High severity validation gap. Confidence: certain.
 - A caller reaches `Coff.getSectionData` for a section whose `virtual_size` combined with `pointer_to_raw_data` or `virtual_address` exceeds the backing buffer length.
 
 ## Proof
-At `lib/std/coff.zig:833`, `getSectionData` derives:
+At `lib/std/coff.zig:1164`, `getSectionData` derives:
 - `offset = sec.virtual_address` for loaded images, or
 - `offset = sec.pointer_to_raw_data` otherwise,
 
@@ -36,7 +36,7 @@ offset <= self.data.len
 offset + sec.virtual_size <= self.data.len
 ```
 
-The reproduced call path reaches this logic from section name lookup in `lib/std/debug/SelfInfo/Windows.zig:515` and `lib/std/debug/SelfInfo/Windows.zig:519`, with the vulnerable slice at `lib/std/coff.zig:1169`. A malformed PE/COFF with oversized section bounds causes Zig's runtime bounds checks to trap, producing a denial of service.
+The reproduced call path reaches this logic from section name lookup in `lib/std/debug/SelfInfo/Windows.zig:513` and `lib/std/debug/SelfInfo/Windows.zig:518`, with the vulnerable slice at `lib/std/coff.zig:1166`. A malformed PE/COFF with oversized section bounds causes Zig's runtime bounds checks to trap, producing a denial of service.
 
 ## Why This Is A Real Bug
 The failing bounds are derived entirely from untrusted file metadata, and the vulnerable operation is a runtime-checked slice. When the computed range exceeds the buffer, execution aborts in safe builds. This is externally triggerable through crafted input and directly violates parser robustness expectations.

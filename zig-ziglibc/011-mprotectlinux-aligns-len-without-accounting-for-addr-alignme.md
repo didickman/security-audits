@@ -6,7 +6,7 @@ Logic Error — High Severity
 
 ## Affected Locations
 
-- `lib/c/sys/mman.zig:51`: `aligned_len` computation uses original `len` instead of `len + (addr - start)`.
+- `lib/c/sys/mman.zig:47`: `aligned_len` computation uses original `len` instead of `len + (addr - start)`.
 
 ## Summary
 

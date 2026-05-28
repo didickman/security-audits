@@ -6,8 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/http/Server.zig:541`
-- `lib/std/http/Server.zig:628`
+- `lib/std/http/Server.zig:629`
 - `lib/std/http/Server.zig:631`
 
 ## Summary
@@ -33,7 +32,7 @@ Host: example
 
 ```
 
-is accepted through header parsing because method recognition does not require body framing. On the keep-alive response path, `respond` / `respondStreaming` invokes `discardBody`. In `.received_head`, `requestHasBody()` becomes true for `POST`, and execution reaches the framing assertion at `lib/std/http/Server.zig:628` and `lib/std/http/Server.zig:631`. With no framing headers present, the assertion fails. In Zig safety/debug-style builds, assertions lower to `unreachable`, producing a process abort rather than a graceful close or protocol error.
+is accepted through header parsing because method recognition does not require body framing. On the keep-alive response path, `respond` / `respondStreaming` invokes `discardBody`. In `.received_head`, `requestHasBody()` becomes true for `POST`, and execution reaches the framing assertion at `lib/std/http/Server.zig:631`. With no framing headers present, the assertion fails. In Zig safety/debug-style builds, assertions lower to `unreachable`, producing a process abort rather than a graceful close or protocol error.
 
 ## Why This Is A Real Bug
 The invariant being asserted is derived from untrusted request input and is not enforced earlier in the server path. A remote client can therefore trigger the abort with a syntactically malformed but parse-accepted request on a persistent connection. This is externally reachable denial of service in assertion-enabled builds, not a theoretical internal-only misuse.

@@ -1,9 +1,7 @@
-diff --git a/lib/std/Build/WebServer.zig b/lib/std/Build/WebServer.zig
-index ea7e0a6e26..51481cd614 100644
---- a/lib/std/Build/WebServer.zig
-+++ b/lib/std/Build/WebServer.zig
-@@ -141,8 +141,6 @@ pub fn deinit(ws: *WebServer) void {
-         t.await();
+diff --git a/lib/compiler/Maker/WebServer.zig b/lib/compiler/Maker/WebServer.zig
+--- a/lib/compiler/Maker/WebServer.zig
++++ b/lib/compiler/Maker/WebServer.zig
+@@ -161,7 +161,5 @@
      }
      if (ws.tcp_server) |*s| s.deinit();
 -

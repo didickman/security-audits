@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/dynamic_library.zig:431`
+- `lib/std/dynamic_library.zig:493`
 
 ## Summary
 - `ElfDynLib.lookupAddress` subtracts `header.symoffset` from a GNU-hash bucket value without handling the ELF empty-bucket sentinel `0`.
@@ -53,7 +53,7 @@ const chain_index = buckets[bucket_index] - header.symoffset;
 
 ## Patch
 - Patch file: `021-gnu-hash-empty-bucket-underflows-chain-index.patch`
-- Required change in `lib/std/dynamic_library.zig:431`:
+- Required change in `lib/std/dynamic_library.zig:493`:
 ```diff
  const bucket_index = hash % header.nbuckets;
 -const chain_index = buckets[bucket_index] - header.symoffset;

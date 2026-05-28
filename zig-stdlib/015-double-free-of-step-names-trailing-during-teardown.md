@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/Build/WebServer.zig:140`
+- `lib/compiler/Maker/WebServer.zig:164`
 
 ## Summary
 `WebServer.deinit` frees `ws.step_names_trailing` twice on the normal teardown path after a successful `WebServer.init`. The first `gpa.free(ws.step_names_trailing)` executes near the start of `deinit`, and the same slice is freed again at function end without reassignment or nulling. This creates allocator misuse on every successful init/deinit lifecycle.
@@ -40,4 +40,4 @@ The allocation already has a matching free earlier in `deinit`. Deleting the tra
 None
 
 ## Patch
-`015-double-free-of-step-names-trailing-during-teardown.patch` removes the final redundant `gpa.free(ws.step_names_trailing)` from `WebServer.deinit` in `lib/std/Build/WebServer.zig`.
+`015-double-free-of-step-names-trailing-during-teardown.patch` removes the final redundant `gpa.free(ws.step_names_trailing)` from `WebServer.deinit` in `lib/compiler/Maker/WebServer.zig`.

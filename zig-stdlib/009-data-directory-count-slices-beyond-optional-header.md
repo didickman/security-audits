@@ -6,9 +6,10 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/coff.zig:778`
-- `lib/std/coff.zig:948`
+- `lib/std/coff.zig:1091`
+- `lib/std/coff.zig:1099`
 - `lib/std/coff.zig:1007`
+- `lib/std/coff.zig:1010`
 
 ## Summary
 `Coff.init` accepts attacker-controlled PE/COFF bytes and only validates that an optional header exists. `getDataDirectories` then trusts the header-reported `number_of_rva_and_sizes` and constructs an `ImageDataDirectory` slice from `self.data[offset..]` without ensuring the optional header actually contains that many entries or that the backing input buffer is long enough. This allows returned directory entries to be read from bytes beyond the declared file-backed slice.
@@ -28,7 +29,7 @@ A local PoC built a PE/COFF buffer whose optional header declared 16 data direct
 - `debug.va=0x22222222`
 - `debug.size=0x33333333`
 
-`getPdbPath` is a direct reachable consumer. It calls `getDataDirectories()`, checks only that index 6 exists, then reads `data_dirs[6]` at `lib/std/coff.zig:1007` and again at `lib/std/coff.zig:1010`, immediately consuming out-of-bounds-derived values.
+`getPdbPath` is a direct reachable consumer. It calls `getDataDirectories()` at `lib/std/coff.zig:1007`, checks only that index 6 exists, then reads `data_dirs[6]` at `lib/std/coff.zig:1010`, immediately consuming out-of-bounds-derived values.
 
 ## Why This Is A Real Bug
 The bug is not theoretical: the parser returns a typed slice whose length is controlled by untrusted header fields rather than bounded by the optional header size and remaining file bytes. That is an out-of-bounds read of attacker-influenced memory relative to the declared input slice. Even where later reads are bounded by `self.data.len`, the oversized directory slice itself already discloses memory contents and can also drive downstream panic/DoS behavior on truncated inputs.

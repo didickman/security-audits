@@ -6,8 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/dynamic_library.zig:299`
-- `lib/std/dynamic_library.zig:313`
+- `lib/std/dynamic_library.zig:324`
 
 ## Summary
 On Linux, `ElfDynLib.open` handles writable `PT_LOAD` segments by creating an anonymous mapping and copying initialized bytes from the ELF file into it. The copy uses `file_bytes[0..ph.p_filesz]` and writes to the mapping base, ignoring both `ph.p_offset` and the in-page destination offset derived from segment alignment. For any writable `PT_LOAD` with nonzero `p_offset`, initialized segment data is deterministically loaded from the wrong source bytes and into the wrong destination address.

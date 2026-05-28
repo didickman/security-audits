@@ -4,7 +4,7 @@
 High severity validation gap. Confidence: certain.
 
 ## Affected Locations
-- `lib/std/zip.zig:487`
+- `lib/std/zip.zig:580`
 
 ## Summary
 `Entry.extract` trusts `self.uncompressed_size` for output length but, for deflate members, does not bound the compressed input to `self.compressed_size`. As a result, decompression can read past the declared ZIP entry payload and consume trailing archive bytes or appended data until it encounters a valid deflate terminator.
@@ -16,7 +16,7 @@ Verified from source and reproduction evidence. Reference: https://swival.dev
 - Extracting a ZIP entry with deflate compression
 
 ## Proof
-In `lib/std/zip.zig:487`, the deflate branch constructs `flate.Decompress` directly over `stream.interface` after seeking to the entry data offset. No reader limit is applied from `self.compressed_size`, and the in-source `TODO limit based on self.compressed_size` confirms the missing boundary check.
+In `lib/std/zip.zig:580`, the deflate branch constructs `flate.Decompress` directly over `stream.interface` after seeking to the entry data offset. No reader limit is applied from `self.compressed_size`, and the in-source `TODO limit based on self.compressed_size` confirms the missing boundary check.
 
 This was reproduced with a malformed ZIP containing one deflate entry whose local and central headers both declared `compressed_size = 1`, while the actual raw deflate stream was 31 bytes. A Zig harness invoking `std.zip.extract` successfully extracted `a.txt` and printed `Hello from forged zip entry!`, proving decompression consumed bytes beyond the declared member length.
 

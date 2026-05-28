@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/Io/Kqueue.zig:841`
+- `lib/std/Io/Kqueue.zig:1214`
 
 ## Summary
 `netRead` builds an `iovec` array from caller-provided destination buffers and assumes at least one non-empty entry exists before checking `dest[0].len`. When all input buffers are empty, the filtered slice length is `0`, and `dest[0]` becomes an invalid access. The patch returns `0` when no non-empty buffers are collected, matching existing vectored-read behavior elsewhere.

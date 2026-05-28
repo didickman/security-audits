@@ -6,12 +6,9 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/tar.zig:570`
-- `lib/std/tar.zig:588`
-- `lib/std/tar.zig:652`
-- `lib/std/Io/Threaded.zig:4812`
-- `lib/std/Io/Threaded.zig:4819`
-- `lib/std/fs/test.zig:1313`
+- `lib/std/tar.zig:635`
+- `lib/std/tar.zig:637`
+- `lib/std/tar.zig:664`
 
 ## Summary
 Tar extraction validates `file.name` against path traversal, but does not validate symbolic-link targets taken from `header.linkName` or pax `linkpath`. Extraction then passes the unchecked target to `dir.symLink(...)`, allowing an archive to create symlinks that resolve outside the destination root. Because later extraction also follows existing symlink path components during directory creation and file open, a crafted archive can use an earlier symlink entry to redirect subsequent file extraction out of tree.
@@ -27,12 +24,12 @@ Tar extraction validates `file.name` against path traversal, but does not valida
 
 ## Proof
 - Tar link targets are sourced from `header.linkName` or pax `linkpath` into `file.link_name`, then used unchanged by extraction.
-- `extract` sanitizes `file.name`, but not `link_name`, before calling symlink creation at `lib/std/tar.zig:570`.
-- The symlink target is passed directly to `dir.symLink(io, link_name, file_name, .{})`, so absolute targets and `..` escapes are accepted.
+- `extract` sanitizes `file.name`, but not `link_name`, before calling symlink creation at `lib/std/tar.zig:635`.
+- The symlink target is passed directly to `dir.symLink(io, link_name, file_name, .{})` via `createDirAndSymlink` at `lib/std/tar.zig:664`, so absolute targets and `..` escapes are accepted.
 - Existing tests explicitly permit a target like `"../../../file1"`, demonstrating intended acceptance of escaping symlink targets.
-- Later archive entries can traverse those symlinked path components because path resolution defaults permit following links and do not require beneath-only resolution in `lib/std/Io/Threaded.zig:4812` and `lib/std/Io/Threaded.zig:4819`.
-- `createDirAndFile` calls `dir.createDirPath` before retrying file creation at `lib/std/tar.zig:652`, and `createDirPath` is tested to operate through an existing valid symlink in `lib/std/fs/test.zig:1313`.
-- Reproducer: a tar containing `pivot -> ../escape` followed by `pivot/payload.txt` causes `payload.txt` to be written outside the extraction root, contradicting the stated invariant at `lib/std/tar.zig:588`.
+- Later archive entries can traverse those symlinked path components because path resolution defaults permit following links and do not require beneath-only resolution.
+- `createDirAndFile` calls `dir.createDirPath` before retrying file creation, and `createDirPath` operates through an existing valid symlink.
+- Reproducer: a tar containing `pivot -> ../escape` followed by `pivot/payload.txt` causes `payload.txt` to be written outside the extraction root, contradicting the documented extraction-root confinement invariant.
 
 ## Why This Is A Real Bug
 The documented behavior says extraction should fail if a file would be extracted outside `dir`. That guarantee is bypassed by symlink entries because the archive can first install an out-of-root indirection and then place later files through it. This is a direct integrity violation during extraction on normal Unix-like systems and is not a theoretical edge case.
@@ -48,5 +45,5 @@ None
 
 ## Patch
 - `037-symlink-extraction-permits-targets-outside-destination-root.patch` rejects unsafe symlink targets during extraction before `dir.symLink(...)` is invoked.
-- The change aligns symlink-target handling with the existing extraction-root confinement intent already documented in `lib/std/tar.zig:588`.
+- The change aligns symlink-target handling with the existing extraction-root confinement intent enforced by `sanitizePath` for entry paths.
 - Valid relative symlink targets that remain within the destination root continue to extract normally.

@@ -4,7 +4,7 @@
 Vulnerability — High Severity
 
 ## Affected Locations
-- `lib/c/malloc.zig:92`
+- `lib/c/malloc.zig:92` (the `n + alignment_bytes` addition inside `malloc`)
 
 ## Summary
 On 32-bit targets, `malloc` adds `alignment_bytes` to the user-requested size `n` before calling the backing allocator. If `n` exceeds `maxInt(usize) - alignment_bytes`, the addition wraps to a small value. The allocator under-allocates the block, the returned user pointer is computed past the true allocation end, and the caller’s first write is an out-of-bounds heap access.
@@ -19,7 +19,7 @@ Swival Security Scanner — https://swival.dev
 
 ## Proof
 - **Input:** `n` near `usize` max on a 32-bit build.
-- **Path:** The size cast to `Header.Size` succeeds. At line 92, `n + alignment_bytes` overflows before `vtable.alloc` is called.
+- **Path:** The size cast to `Header.Size` succeeds (on 32-bit ReleaseFast/ReleaseSmall, `Header.Size` is `u32` and accepts the full `usize` range). `n + alignment_bytes` then overflows before `vtable.alloc` is called.
 - **Condition:** The wrapped sum is a small value, causing the backing allocator to provide a block of only `alignment_bytes` (or similarly insufficient) size.
 - **Impact:** `base = ptr + alignment_bytes` points at or past the actual allocation boundary. Because the caller believes it owns `n` bytes, the first store through the returned pointer is a heap buffer overflow. The path is practically triggerable by any program requesting a very large allocation on 32-bit systems.
 

@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/crypto/tls/Client.zig:836`
+- `lib/std/crypto/tls/Client.zig:1287`
 
 ## Summary
 A TLS 1.3 client accepts a post-handshake `KeyUpdate` handshake length from decrypted input and reads `handshake[0]` without first validating that the body length is exactly 1. A malicious authenticated peer can send a zero-length `KeyUpdate` body, causing a runtime panic in safety-enabled builds and unchecked out-of-bounds behavior in unsafe builds.
@@ -20,7 +20,7 @@ A TLS 1.3 client accepts a post-handshake `KeyUpdate` handshake length from decr
 - Message is delivered through authenticated encrypted application-data records and reaches post-handshake parsing in `readIndirect`
 
 ## Proof
-The parser in `readIndirect` accepts the handshake length from decrypted cleartext, slices `handshake = cleartext[ct_i..next_handshake_i]`, and then handles `.key_update` by evaluating `@enumFromInt(handshake[0])` at `lib/std/crypto/tls/Client.zig:836` without checking `handshake.len >= 1`.
+The parser in `readIndirect` accepts the handshake length from decrypted cleartext, slices `handshake = cleartext[ct_i..next_handshake_i]`, and then handles `.key_update` by evaluating `@enumFromInt(handshake[0])` at `lib/std/crypto/tls/Client.zig:1287` without checking `handshake.len >= 1`.
 
 A valid reproducer record can decrypt to inner plaintext ending in handshake content type with bytes equivalent to:
 ```text

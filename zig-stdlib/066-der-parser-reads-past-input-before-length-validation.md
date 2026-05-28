@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/crypto/Certificate.zig:617`
+- `lib/std/crypto/Certificate.zig:915`
 
 ## Summary
 `der.Element.parse(bytes, index)` reads the DER identifier and length bytes before proving that the two-byte header exists. When attacker-controlled certificate input is empty or only one byte long, parsing reaches unchecked `bytes[i]` accesses and faults before returning a structured parse error.

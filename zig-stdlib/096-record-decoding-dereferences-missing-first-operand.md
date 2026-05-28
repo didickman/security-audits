@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/zig/llvm/BitcodeReader.zig:220`
+- `lib/std/zig/llvm/BitcodeReader.zig:265`
 
 ## Summary
 `nextRecord` decodes abbreviation operands into `operands`, then unconditionally reads `operands.items[0]` to populate the record id. If a malformed abbreviation yields zero operands, this violates the parser's non-empty-record invariant and triggers a bounds trap. The patch rejects empty decoded operand lists before dereferencing index `0`.
@@ -22,7 +22,7 @@
 - `nextRecord` appends one entry per decoded abbreviation operand into `operands`
 - For an abbreviation with zero operands, the decode loop performs zero iterations and `operands.items.len` remains `0`
 - `.name` already tolerates this state by returning an empty slice when `len < 1`
-- `.id` then evaluates `operands.items[0]` at `lib/std/zig/llvm/BitcodeReader.zig:220`
+- `.id` then evaluates `operands.items[0]` at `lib/std/zig/llvm/BitcodeReader.zig:265`
 - This is an out-of-bounds access on an empty slice, causing a bounds-checked trap during record parsing
 - The reproducer reaches this state by entering a nested block with attacker-controlled abbreviation width, defining an abbreviation with zero operands, and then emitting a record using that abbreviation
 

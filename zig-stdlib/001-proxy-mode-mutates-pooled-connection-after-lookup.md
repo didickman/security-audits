@@ -6,10 +6,10 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/http/Client.zig:1176`
-- `lib/std/http/Client.zig:1001`
-- `lib/std/http/Client.zig:1076`
-- `lib/std/http/Client.zig:1621`
+- `lib/std/http/Client.zig:1620`
+- `lib/std/http/Client.zig:999`
+- `lib/std/http/Client.zig:1071`
+- `lib/std/http/Client.zig:1619`
 
 ## Summary
 `Client.connect` can reuse a pooled TCP connection to `proxy.host:proxy.port` that was created for direct use, then mutate that live connection into proxy mode by setting `connection.proxied = true` after pool lookup. That violates the pool key invariant because proxy mode changes request formatting and header emission without being part of connection selection.
@@ -27,10 +27,10 @@
 ## Proof
 - In proxy fallback, `Client.connect` first resolves a connection through `connectTcp(proxy.host, proxy.port, proxy.protocol)`
 - Pool lookup in `findConnection` can select an existing direct connection because the endpoint tuple matches
-- After reuse, code sets `connection.proxied = true` at `lib/std/http/Client.zig:1176` / reproduced at `lib/std/http/Client.zig:1621`
+- After reuse, code sets `connection.proxied = true` at `lib/std/http/Client.zig:1620`
 - This post-selection mutation is behaviorally significant:
-  - `sendHead` uses absolute-form targets when `connection.proxied` is true at `lib/std/http/Client.zig:1001`
-  - `sendHead` emits `proxy-authorization` when `connection.proxied` is true at `lib/std/http/Client.zig:1076`
+  - `sendHead` uses absolute-form targets when `connection.proxied` is true at `lib/std/http/Client.zig:999`
+  - `sendHead` emits `proxy-authorization` when `connection.proxied` is true at `lib/std/http/Client.zig:1071`
 - Therefore the same persistent socket can first serve direct requests to the proxy endpoint itself and later serve proxy-form requests with proxy credentials, proving the invariant violation
 
 ## Why This Is A Real Bug

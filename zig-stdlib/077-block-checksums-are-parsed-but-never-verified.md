@@ -6,8 +6,8 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/compress/xz/Decompress.zig:119`
-- `lib/std/compress/xz/Decompress.zig:301`
+- `lib/std/compress/xz/Decompress.zig:155`
+- `lib/std/compress/xz/Decompress.zig:178`
 
 ## Summary
 `std.compress.xz.Decompress` records the stream-level `check` mode during initialization and, for each block, parses the trailing block checksum or hash. However, for supported non-`none` modes (`crc32`, `crc64`, `sha256`), the implementation discards the declared value without validating it against the bytes actually produced by decompression. As a result, tampered block contents are accepted and returned to callers if the rest of the XZ structure remains valid.

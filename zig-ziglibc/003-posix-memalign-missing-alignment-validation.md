@@ -4,7 +4,7 @@
 Validation gap. Medium severity. Confidence: certain.
 
 ## Affected Locations
-- `lib/c/malloc.zig:186`
+- `lib/c/malloc.zig:185` (function `posix_memalign`)
 
 ## Summary
 `posix_memalign` does not validate that `alloc_alignment` is a power of two before forwarding it to `aligned_alloc_inner` → `Alignment.fromByteUnits`. In release builds, the debug assertion inside `fromByteUnits` is elided, allowing non-power-of-two values to propagate silently. This produces an under-aligned pointer and incorrect header metadata, violating POSIX `EINVAL` requirements and internal allocator invariants.

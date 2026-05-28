@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/Io.zig:403`
+- `lib/std/Io.zig:496`
 
 ## Summary
 `Io.Batch.init` accepts caller-controlled `storage: []Operation.Storage` and unconditionally initializes a linked free-list using `storage[storage.len - 1]`. When `storage.len == 0`, this underflows the index and immediately performs an out-of-bounds access, while also fabricating invalid non-empty list metadata for `unused.head` and `unused.tail`.

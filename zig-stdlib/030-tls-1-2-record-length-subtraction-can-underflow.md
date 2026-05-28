@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/crypto/tls/Client.zig:779`
+- `lib/std/crypto/tls/Client.zig:1205`
 
 ## Summary
 A server-controlled TLS 1.2 record length is reduced by `P.record_iv_length + P.mac_length` without first enforcing that the record is at least that large. For undersized AEAD records, the `u16` subtraction underflows, yielding a bogus large plaintext length. The client then reaches `input.take(message_len) catch unreachable` with only `5 + record_len` bytes buffered, causing an abort instead of returning a protocol error.
@@ -23,7 +23,7 @@ A peer-controlled `record_len` is parsed from the TLS record header in `readIndi
 ```zig
 const message_len: u16 = record_len - P.record_iv_length - P.mac_length;
 ```
-with no prior lower-bound check at `lib/std/crypto/tls/Client.zig:779`.
+with no prior lower-bound check at `lib/std/crypto/tls/Client.zig:1205`.
 
 For a short record, such as `record_len = 8` with `P.record_iv_length = 8` and `P.mac_length = 16`, the arithmetic underflows:
 ```text
@@ -31,7 +31,7 @@ For a short record, such as `record_len = 8` with `P.record_iv_length = 8` and `
 ```
 
 The buffering logic only ensures `5 + record_len` bytes are available before parsing the record body, as reproduced from the `readIndirect` path. The oversized `message_len` later flows to:
-- `lib/std/crypto/tls/Client.zig:1214`
+- `lib/std/crypto/tls/Client.zig:1206`
 
 where `input.take(message_len) catch unreachable` executes. With only the short record buffered, this `take` fails and the `catch unreachable` aborts the process.
 

@@ -6,7 +6,7 @@ Invariant Violation — Medium Severity
 
 ## Affected Locations
 
-- `lib/c/unistd.zig`: function `getgroupsLinux`, line containing `@intCast(size)` (approximately line 143–144)
+- `lib/c/unistd.zig`: function `getgroupsLinux`, line containing `@intCast(size)` (line 145)
 
 ## Summary
 

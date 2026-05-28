@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/c/string.zig:229`
+- `lib/c/string.zig:276` (function `memccpy`)
 
 ## Summary
 `memccpy` in `lib/c/string.zig` computes the copy length as the index of the matched byte or `len`, then copies only `src[0..copying_len]` and always returns `dst + copying_len`. This violates standard `memccpy` behavior in two ways: it omits the matched byte from the copy, and it never returns `NULL` when the byte is absent.
@@ -30,7 +30,7 @@
 - Caller relies on standard `memccpy` copy/return semantics.
 
 ## Proof
-At `lib/c/string.zig:229`, `copying_len` is computed as `findScalar(...) orelse len`. The implementation then:
+At `lib/c/string.zig:276`, `copying_len` is computed as `findScalar(...) orelse len`. The implementation then:
 - copies `src[0..copying_len]` into `dst`
 - returns `dst + copying_len`
 

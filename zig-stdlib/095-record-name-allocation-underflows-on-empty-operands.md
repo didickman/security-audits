@@ -6,7 +6,6 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/zig/llvm/BitcodeReader.zig:302`
 - `lib/std/zig/llvm/BitcodeReader.zig:358`
 - `lib/std/zig/llvm/BitcodeReader.zig:362`
 

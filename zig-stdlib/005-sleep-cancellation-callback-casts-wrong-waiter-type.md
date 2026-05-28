@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/Io/Dispatch.zig:2382`
+- `lib/std/Io/Dispatch.zig:4717`
 
 ## Summary
 Cancelable sleep initializes its cancellation hook with `&Futex.Waiter.canceled` instead of the sleep-specific `&SleepWaiter.canceled`. When cancellation happens before the timer fires, the runtime invokes the futex waiter callback with a `SleepWaiter.cancelable` pointer. That callback reconstructs the parent as `*Futex.Waiter`, violating object layout assumptions and causing invalid memory access.
@@ -20,7 +20,7 @@ Cancelable sleep initializes its cancellation hook with `&Futex.Waiter.canceled`
 - A cancelable sleep is canceled before its timer fires
 
 ## Proof
-At `lib/std/Io/Dispatch.zig:2382`, `sleep()` assigns the cancellation callback for a `SleepWaiter` to `&Futex.Waiter.canceled`.
+At `lib/std/Io/Dispatch.zig:4717`, `sleep()` assigns the cancellation callback for a `SleepWaiter` to `&Futex.Waiter.canceled`.
 
 On cancellation, fiber cancellation dispatches that callback with the `SleepWaiter.cancelable` field pointer. `Futex.Waiter.canceled` then performs `@fieldParentPtr("cancelable", cancelable)` as though the enclosing object were `Futex.Waiter`. That assumption is false: the actual parent object is `SleepWaiter`.
 

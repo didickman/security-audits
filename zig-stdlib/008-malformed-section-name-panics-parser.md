@@ -6,14 +6,14 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/coff.zig:371`
 - `lib/std/coff.zig:476`
+- `lib/std/coff.zig:1143`
 - `lib/std/coff.zig:1146`
-- `lib/std/coff.zig:1154`
+- `lib/std/coff.zig:1155`
 
 ## Summary
 - COFF section names are parsed from untrusted bytes in `SectionHeader.name`.
-- Slash-prefixed names are treated as string-table offsets, but `lib/std/coff.zig:371` uses `std.fmt.parseInt(... ) catch unreachable`.
+- Slash-prefixed names are treated as string-table offsets, but `lib/std/coff.zig:476` uses `std.fmt.parseInt(... ) catch unreachable`.
 - A malformed name such as `"/abc"` triggers a panic instead of a recoverable parse failure.
 - This yields a denial of service during normal section-name lookup.
 
@@ -28,9 +28,9 @@
 
 ## Proof
 - `Coff.getSectionName` resolves names by calling `sect_hdr.getName()`, then falls through to offset-based lookup for slash-prefixed names.
-- `SectionHeader.getNameOffset` parses the suffix with `std.fmt.parseInt(u32, self.name[1..len], 10) catch unreachable` at `lib/std/coff.zig:371`.
+- `SectionHeader.getNameOffset` parses the suffix with `std.fmt.parseInt(u32, self.name[1..len], 10) catch unreachable` at `lib/std/coff.zig:476`.
 - With a crafted section name `"/abc"`, `parseInt` returns `error.InvalidCharacter`; the `catch unreachable` converts that into a panic.
-- The reproduced stack reached the panic through normal section scanning and lookup, with top frames at `lib/std/coff.zig:476`, `lib/std/coff.zig:1146`, and `lib/std/coff.zig:1154`.
+- The reproduced stack reached the panic through normal section scanning and lookup, with top frames at `lib/std/coff.zig:476`, `lib/std/coff.zig:1146`, and `lib/std/coff.zig:1155`.
 - The reproducer used a synthetic PE/COFF buffer with one malformed section name and a valid-looking string-table header; `parsed.getSectionByName(".debug_info")` aborted with `thread panic: attempt to unwrap error: InvalidCharacter`.
 
 ## Why This Is A Real Bug

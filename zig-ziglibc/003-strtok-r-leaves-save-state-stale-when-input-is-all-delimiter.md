@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/c/string.zig:155`
+- `lib/c/string.zig:189` (function `strtok_r`, early return at line 199)
 
 ## Summary
 `strtok_r` returns `null` for an input string made entirely of delimiters, but it exits before updating `state.*`. If `state` still holds a pointer from an earlier parse, later continuation calls can resume from that stale buffer instead of reflecting that the new parse is complete.
@@ -20,7 +20,7 @@
 - `state` is non-null and already contains a pointer from a prior tokenization sequence
 
 ## Proof
-- In `lib/c/string.zig:155`, `strtok_r` derives `str_bytes` from `maybe_str` or `state.*`.
+- In `lib/c/string.zig:189`, `strtok_r` derives `str_bytes` from `maybe_str` or `state.*`.
 - It computes `tok_start = findNone(str_bytes, values_bytes) orelse return null;`.
 - For an all-delimiter string, `findNone` returns `null`, so control returns immediately.
 - Because that return happens before any write to `state.*`, the prior save pointer remains unchanged.

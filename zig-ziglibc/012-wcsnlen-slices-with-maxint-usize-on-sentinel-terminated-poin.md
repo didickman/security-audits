@@ -6,8 +6,8 @@ Logic Error — Medium Severity
 
 ## Affected Locations
 
-- `lib/c/wchar.zig:83` — `wcslen` passes `maxInt(usize)` to `wcsnlen`
-- `lib/c/wchar.zig:86` — `wcsnlen` slices sentinel-terminated pointer with caller-provided length
+- `lib/c/wchar.zig:81-82` — `wcslen` passes `maxInt(usize)` to `wcsnlen`
+- `lib/c/wchar.zig:85-86` — `wcsnlen` slices sentinel-terminated pointer with caller-provided length
 
 ## Summary
 

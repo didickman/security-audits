@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/std/http/Server.zig:290`
+- `lib/std/http/Server.zig:338`
 - `lib/std/http/Server.zig:371`
 - `lib/std/http/Server.zig:444`
 - `lib/std/http/Server.zig:553`
